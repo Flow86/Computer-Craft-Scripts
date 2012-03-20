@@ -1,0 +1,141 @@
+-- code by Cloudy
+
+local co1 = nil
+local co2 = nil
+
+local tArgs = { ... }
+tArgs[0] = shell.getRunningProgram()
+
+if #tArgs <= 2 then
+	print( "Usage: "..tArgs[0].." <side> <program> <args>" )
+	return
+end
+
+local side = tArgs[1]
+local program = tArgs[2]
+
+function runProgram()
+	shell.run(program, unpack(tArgs, 3, #tArgs))
+end
+
+function dualRun(f1, f2, side1, side2)
+    if type(f1) ~= "function" or type(f2) ~= "function" then error("Type isn't function. Aborted") end
+    co1 = coroutine.create(f1)
+    co2 = coroutine.create(f2)
+    
+    local monitor, monitor2
+    
+    
+    if side1 then
+        if peripheral.getType(side1) ~= "monitor" then error("Peripheral at side "..side1.." isn't a monitor.") end
+        monitor = peripheral.wrap(side1)
+    end
+    if side2 then
+        if peripheral.getType(side2) ~= "monitor" then error("Peripheral at side "..side2.." isn't a monitor.") end
+        monitor2 = peripheral.wrap(side2)
+    end
+    
+    local event, p1, p2, p3, p4, p5
+    
+    while true do
+        if co1 ~= nil and coroutine.status(co1) ~= "dead" then
+            if monitor2 then
+                term.redirect(monitor2)
+                coroutine.resume(co1, event, p1, p2, p3, p4, p5)
+                term.restore()
+            else
+                coroutine.resume(co1, event, p1, p2, p3, p4, p5)
+            end
+        end
+        if co2 ~= nil and coroutine.status(co2) ~= "dead" then
+            if monitor then
+                term.redirect(monitor)
+                coroutine.resume(co2, event, p1, p2, p3, p4, p5)
+                term.restore()
+            else
+                coroutine.resume(co2, event, p1, p2, p3, p4, p5)
+            end
+        end
+        
+        if (co1 == nil or coroutine.status(co1) == "dead") and (co2 == nil or coroutine.status(co2) == "dead") then
+            break
+        end
+        
+        event, p1, p2, p3, p4, p5 = coroutine.yield()
+
+    end
+end
+
+function quadRun(f1, f2, f3, f4)
+    if type(f1) ~= "function" or type(f2) ~= "function" then error("Type isn't function. Aborted") end
+    co1 = coroutine.create(f1)
+    co2 = coroutine.create(f2)
+    co3 = coroutine.create(f3)
+    co4 = coroutine.create(f4)
+    
+    local monitor, monitor2, monitor3, monitor4
+    
+    
+    monitor = peripheral.wrap("top")
+    monitor2 = peripheral.wrap("bottom")
+    monitor3 = peripheral.wrap("front")
+    monitor4 = peripheral.wrap("back")
+
+    
+    local event, p1, p2, p3, p4, p5
+    
+    while true do
+        if co1 ~= nil and coroutine.status(co1) ~= "dead" then
+            if monitor2 then
+                term.redirect(monitor2)
+                coroutine.resume(co1, event, p1, p2, p3, p4, p5)
+                term.restore()
+            else
+                coroutine.resume(co1, event, p1, p2, p3, p4, p5)
+            end
+        end
+        if co2 ~= nil and coroutine.status(co2) ~= "dead" then
+            if monitor then
+                term.redirect(monitor)
+                coroutine.resume(co2, event, p1, p2, p3, p4, p5)
+                term.restore()
+            else
+                coroutine.resume(co2, event, p1, p2, p3, p4, p5)
+            end
+        end
+        if co3 ~= nil and coroutine.status(co3) ~= "dead" then
+            if monitor3 then
+                term.redirect(monitor3)
+                coroutine.resume(co3, event, p1, p2, p3, p4, p5)
+                term.restore()
+            else
+                coroutine.resume(co3, event, p1, p2, p3, p4, p5)
+            end
+        end
+
+        if co4 ~= nil and coroutine.status(co4) ~= "dead" then
+            if monitor4 then
+                term.redirect(monitor4)
+                coroutine.resume(co4, event, p1, p2, p3, p4, p5)
+                term.restore()
+            else
+                coroutine.resume(co4, event, p1, p2, p3, p4, p5)
+            end
+        end
+        
+        if (co1 == nil or coroutine.status(co1) == "dead") and (co2 == nil or coroutine.status(co2) == "dead") and (co3 == nil or coroutine.status(co3) == "dead") and (co4 == nil or coroutine.status(co4) == "dead") then
+            break
+        end
+        
+        event, p1, p2, p3, p4, p5 = coroutine.yield()
+
+    end
+end
+
+--dualRun(function() shell.run("shell") end , function() shell.run("secret/alongtimeago") end, "right")
+
+dualRun(function() shell.run("shell") end, function() runProgram() end, side)
+
+
+--quadRun(function() shell.run("secret/alongtimeago") end, function() shell.run("secret/alongtimeago") end, function() shell.run("secret/alongtimeago") end, function() shell.run("secret/alongtimeago") end)
+--quadRun(function() shell.run("shell") end, function() shell.run("shell") end, function() shell.run("shell") end, function() shell.run("shell") end)

@@ -1,0 +1,30 @@
+shell.run("flow86/tunnel-lib.lua")
+
+local tArgs = { ... }
+if #tArgs ~= 1 then
+	print( "Usage: "..tArgs[0].." <depth>" )
+	return
+end
+
+-- Mine in a quarry pattern until we hit something we can't dig
+local length = tonumber( tArgs[1] )
+if length < 1 then
+	print( "Quarry depth must be positive" )
+	return
+end
+
+local diameter = 10
+local direction = "left"
+
+for d=1,depth do
+	for n=1,diameter/2 do
+		turtle.digDown()
+	
+		if not turtle.forward() then
+			print( "Aborting Quarry. Turtle is stuck!" )
+			break
+		end
+	end
+	
+	turtle.turnRight()
+end

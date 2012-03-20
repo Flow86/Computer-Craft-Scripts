@@ -1,0 +1,122 @@
+shell.run('flow86/tunnel-lib.lua')
+
+local tArgs = { ... }
+tArgs[0] = shell.getRunningProgram()
+
+if #tArgs ~= 1 then
+	print( "Usage: "..tArgs[0].." <length>" )
+	return
+end
+
+-- Mine in a quarry pattern until we hit something we can't dig
+local length = tonumber( tArgs[1] )
+if length < 1 then
+	print( "Tunnel length must be positive" )
+	return
+end
+	
+local depth = 0
+
+print( "Tunnelling..." )
+
+local function digColumn(height, up)
+	for i=1,height-1 do
+		if up == true then
+			tryDigUp()
+			if not turtle.up() then return end
+		else
+			tryDigDown()
+			if not turtle.down() then return end
+		end
+	end
+end
+
+local width = 5
+local height = 4
+
+for n=1,length do
+	turtle.placeDown()
+	
+	-- 3rd column xxXxx
+	digColumn(height, true)
+	
+	-- look left
+	turtle.turnLeft()
+
+	-- 2nd column xXOxx
+	tryDig();
+	if not turtle.forward() then return end
+	digColumn(height, false)
+	
+	-- 1st column XOOxx
+	tryDig();
+	if not turtle.forward() then return end
+	digColumn(height-1, true)
+	
+	-- look right
+	turtle.turnRight()
+	turtle.turnRight()
+
+	for i=1,width-1 do
+		tryDig();
+		if not turtle.forward() then return end
+	end
+	
+	 -- look left
+	turtle.turnLeft()
+	turtle.turnLeft()
+	
+	-- 5th column OOOxX
+	digColumn(height-1, false)
+	
+	tryDig();
+	if not turtle.forward() then return end
+	
+	-- 4th column OOOXO
+	digColumn(height, true)
+	
+	tryDig()
+	if not turtle.forward() then return end
+	
+	for i=1,height-1 do
+		if not turtle.down() then return end
+	end
+	
+	-- look forward
+	turtle.turnRight()
+
+	if space() < 64 then
+		print "Turtle is full."
+		return
+	end
+
+	if n<length then
+		tryDig()
+		if not turtle.forward() then
+			print( "Aborting Tunnel after "..n.." Blocks of "..length..". Turtle is stuck!" )
+			break
+		end
+	else
+		print( "Tunnel complete." )
+	end
+end
+
+--[[
+print( "Returning to start..." )
+
+-- Return to where we started
+turtle.turnLeft()
+turtle.turnLeft()
+while depth > 0 do
+	if turtle.forward() then
+		depth = depth - 1
+	else
+		turtle.dig()
+	end
+end
+turtle.turnRight()
+turtle.turnRight()
+]]
+
+print( "Tunnel complete." )
+print( "Mined "..getCollected().." blocks total." )

@@ -1,0 +1,85 @@
+shell.run('flow86/tunnel-lib.lua')
+
+local tArgs = { ... }
+tArgs[0] = shell.getRunningProgram()
+
+if #tArgs ~= 1 then
+	print( "Usage: "..tArgs[0].." <length>" )
+	return
+end
+
+-- Mine in a quarry pattern until we hit something we can't dig
+local length = tonumber( tArgs[1] )
+if length < 1 then
+	print( "Tunnel length must be positive" )
+	return
+end
+	
+local depth = 0
+
+print( "Tunnelling..." )
+
+for n=1,length do
+	turtle.placeDown()
+	
+	turtle.turnLeft()
+
+	-- dig up 2
+	tryDigUp()
+
+	-- dig left
+	tryDig()
+
+	-- dig left 2
+	turtle.up()
+	tryDig()
+
+	-- dig up 3
+	tryDigUp()
+	
+	-- dig left 3
+	turtle.up()
+	tryDig()
+
+	turtle.turnRight()
+	turtle.turnRight()
+	
+	tryDig()
+	turtle.down()
+	tryDig()
+	turtle.down()
+	tryDig()
+
+	turtle.turnLeft()
+	
+	if n<length then
+		tryDig()
+		if not turtle.forward() then
+			print( "Aborting Tunnel." )
+			break
+		end
+	else
+		print( "Tunnel complete." )
+	end
+
+end
+
+--[[
+print( "Returning to start..." )
+
+-- Return to where we started
+turtle.turnLeft()
+turtle.turnLeft()
+while depth > 0 do
+	if turtle.forward() then
+		depth = depth - 1
+	else
+		turtle.dig()
+	end
+end
+turtle.turnRight()
+turtle.turnRight()
+]]
+
+print( "Tunnel complete." )
+print( "Mined "..getCollected().." blocks total." )
