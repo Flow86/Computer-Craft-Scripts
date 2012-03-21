@@ -1,0 +1,202 @@
+shell.run('flow86/tunnel-lib.lua')
+
+local tArgs = { ... }
+tArgs[0] = shell.getRunningProgram()
+
+if #tArgs ~= 1 then
+	print( "Usage: "..tArgs[0].." <length>" )
+	return
+end
+
+-- Mine in a quarry pattern until we hit something we can't dig
+local length = tonumber( tArgs[1] )
+if length < 1 then
+	print( "Tunnel length must be positive" )
+	return
+end
+	
+local depth = 0
+
+print( "Tunnelling..." )
+
+local function digColumn(height, up)
+	for i=1,height-1 do
+		if up == true then
+			tryDigUp()
+			if not turtle.up() then return end
+		else
+			tryDigDown()
+			if not turtle.down() then return end
+		end
+	end
+end
+
+local width = 5
+local height = 4
+
+local function saveForward()
+	if not turtle.forward() then
+		print( "Aborting Tunnel. Turtle is stuck!" )
+		return false
+	end
+	return true
+end
+
+turtle.turnRight()
+for n=1,width/2 do
+	if not turtle.forward() then
+		print( "Aborting Tunnel in first row of "..length..". Turtle is stuck!" )
+		break
+	end
+end
+turtle.turnLeft()
+
+-- one forward (we build a tunnel! so the first row is empty!)
+tryDig()
+if not saveForward() then return end
+
+local direction = "left"
+
+for n=1,length do
+	
+	if direction == "left" then
+		turtle.turnLeft()
+	else
+		turtle.turnRight()
+	end
+	
+	--  xxx
+	-- xxxxx
+	-- xxxxd
+	-- xxxdT
+	tryDig()
+	tryDigUp()
+	
+	if not turtle.up() then
+	 	print( "Aborting Tunnel. Turtle is stuck!" )
+		return
+	end
+
+	--  xxx
+	-- xxxxd
+	-- xxxdT
+	-- xxx__
+	tryDig()
+	tryDigUp()
+
+	if not turtle.up() then
+	 	print( "Aborting Tunnel. Turtle is stuck!" )
+		return
+	end
+
+	--  xxx
+	-- xxxdT
+	-- xxx__
+	-- xxx__
+	tryDig()
+	
+	if not saveForward() then return end
+
+	--  xxd
+	-- xxdT_
+	-- xxx__
+	-- xxx__
+	tryDig()
+	tryDigUp()
+	
+	if not saveForward() then return end
+
+	--  xd_
+	-- xdT__
+	-- xxd__
+	-- xxx__
+	tryDig()
+	tryDigUp()
+	tryDigDown()
+
+	if not saveForward() then return end
+
+	--  d__
+	-- dT___
+	-- xd___
+	-- xxx__
+	tryDig()
+	tryDigUp()
+	tryDigDown()
+	
+	if not turtle.down() then
+	 	print( "Aborting Tunnel. Turtle is stuck!" )
+		return
+	end
+	
+	--  ___
+	-- _____
+	-- dT___
+	-- xdx__
+	tryDig()
+	tryDigDown()
+
+	if not turtle.down() then
+	 	print( "Aborting Tunnel. Turtle is stuck!" )
+		return
+	end
+
+	--  ___
+	-- _____
+	-- _____
+	-- dTx__
+	tryDig()
+	
+	-- 180°
+	turtle.turnRight()
+	turtle.turnRight()
+
+	--  ___
+	-- _____
+	-- _____
+	-- _T___
+	tryDig()
+
+	-- 180°
+	turtle.turnRight()
+	turtle.turnRight()
+	
+	if not saveForward() then return end
+	
+	
+	if direction == "left" then
+		turtle.turnRight()
+		direction = "right"
+	else
+		turtle.turnLeft()
+		direction = "left"
+	end
+
+
+	if n<length then
+		tryDig()
+		if not turtle.forward() then
+			print( "Aborting Tunnel after "..n.." Blocks of "..length..". Turtle is stuck!" )
+			break
+		end
+	end
+end
+
+if direction == "left" then
+	turtle.turnLeft()
+else
+	turtle.turnRight()
+end
+
+for i=1,width/2 do
+	if not saveForward() then return end
+end
+
+if direction == "left" then
+	turtle.turnRight()
+else
+	turtle.turnLeft()
+end
+
+print( "Tunnel complete." )
+print( "Mined "..getCollected().." blocks total." )

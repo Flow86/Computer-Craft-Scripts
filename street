@@ -1,0 +1,109 @@
+shell.run("flow86/tunnel-lib.lua")
+
+local tArgs = { ... }
+tArgs[0] = shell.getRunningProgram()
+if #tArgs ~= 2 then
+	print( "Usage: "..tArgs[0].." <width> <length>" )
+	return
+end
+
+-- Mine in a quarry pattern until we hit something we can't dig
+local width = tonumber( tArgs[1] )
+if width < 3 then
+	print( "Street width must be at least 3" )
+	return
+end
+
+local length = tonumber( tArgs[2] )
+if length < 1 then
+	print( "Street length must be positive" )
+	return
+end
+
+function select()
+	if advturtle then
+		cobble = advturtle.findblock("cobblestone")
+		if not cobble then
+			print( "Did not found any(more) cobblestone in the turtle!" )
+			return false
+		end
+		turtle.select(cobble)
+	end
+	
+	return true
+end
+
+if not select() then return end
+
+turtle.turnRight()
+for n=1,width/2 do
+	if not turtle.forward() then
+		print( "Aborting Street in first row of "..length..". Turtle is stuck!" )
+		break
+	end
+end
+
+turtle.turnLeft()
+
+local function saveForward()
+	if not turtle.forward() then
+		print( "Aborting Street. Turtle is stuck!" )
+		return false
+	end
+	return true
+end
+
+local function saveDigDown()
+	if not select() then return false end
+	
+	if not turtle.compareDown() then
+		turtle.digDown()
+		turtle.placeDown()
+	end
+	
+	return true
+end
+
+local direction = "left"
+
+for n=1,length do
+
+	if direction == "left" then
+		turtle.turnLeft()
+	else
+		turtle.turnRight()
+	end
+
+	for i=1,width-1 do
+		if not saveDigDown() then return end
+		if not saveForward() then return end
+	end
+
+	if not saveDigDown() then return end
+	
+	if direction == "left" then
+		turtle.turnRight()
+		direction = "right"
+	else
+		turtle.turnLeft()
+		direction = "left"
+	end
+
+	if not saveForward() then return end
+end
+
+if direction == "left" then
+	turtle.turnLeft()
+else
+	turtle.turnRight()
+end
+
+for i=1,width/2 do
+	if not saveForward() then return end
+end
+
+if direction == "left" then
+	turtle.turnRight()
+else
+	turtle.turnLeft()
+end
