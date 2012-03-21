@@ -14,22 +14,45 @@ if length < 1 then
 	print( "Tunnel length must be positive" )
 	return
 end
+
+local lighting = false
+
+local function selectTorch()
+	if advturtle then
+		torch = advturtle.findblock("torch")
+		if not torch then
+			print( "Did not found any(more) torches in the turtle!" )
+			return false
+		end
+		turtle.select(torch)
+		return true
+	end
+	return false
+end
+
+local function selectCobblestone()
+	if advturtle then
+		cobblestone = advturtle.findblock("cobblestone")
+		if not cobblestone then
+			print( "Did not found any(more) cobblestone in the turtle!" )
+			return false
+		end
+		turtle.select(cobblestone)
+		return true
+	end
+	return false
+end
+
+if advturtle then
+	lighting = true
+	if not selectTorch() then return end
+end
+
+--if not selectCobblestone() then return end
 	
 local depth = 0
 
 print( "Tunnelling..." )
-
-local function digColumn(height, up)
-	for i=1,height-1 do
-		if up == true then
-			tryDigUp()
-			if not turtle.up() then return end
-		else
-			tryDigDown()
-			if not turtle.down() then return end
-		end
-	end
-end
 
 local width = 5
 local height = 4
@@ -46,14 +69,52 @@ turtle.turnRight()
 for n=1,width/2 do
 	if not turtle.forward() then
 		print( "Aborting Tunnel in first row of "..length..". Turtle is stuck!" )
-		break
+		return
 	end
 end
 turtle.turnLeft()
 
+local posBefore = {}
+if lighting then
+	posBefore[0] = advturtle.x()
+	posBefore[1] = advturtle.y()
+	posBefore[2] = advturtle.z()
+end
+
 -- one forward (we build a tunnel! so the first row is empty!)
 tryDig()
 if not saveForward() then return end
+
+--if not turtle.detectDown() then
+--	if not selectCobblestone() then return end
+--	turtle.placeDown()
+--end
+
+local posAfter = {}
+local lighting_dir = -1
+if lighting then
+	posAfter[0] = advturtle.x()
+	posAfter[1] = advturtle.y()
+	posAfter[2] = advturtle.z()
+	
+	print(posBefore[0], posBefore[1], posBefore[2])
+	print(posAfter[0], posAfter[1], posAfter[2])
+	
+	-- x direction
+	if (posBefore[0] - posAfter[0]) ~= 0 then
+		lighting_dir = 0
+	end
+	
+	-- z direction
+	if (posBefore[2] - posAfter[2]) ~= 0 then
+		lighting_dir = 2
+	end
+	
+	if lighting_dir < 0 then
+		print( "Cannot determine direction for lighting - disabling it ..." )
+		lighting = false
+	end
+end
 
 local direction = "left"
 
@@ -83,6 +144,35 @@ for n=1,length do
 	-- xxx__
 	tryDig()
 	tryDigUp()
+	
+	local light_it = false
+	if lighting then
+		if lighting_dir == 0 then
+			if (advturtle.x() % 4) == 0 then
+				light_it = true
+			end
+		end
+		if lighting_dir == 2 then
+			if (advturtle.z() % 4) == 0 then
+				light_it = true
+			end
+		end
+		
+		if light_it then
+			-- place cobblestone if we have no "light-post"
+			turtle.turnRight()
+			turtle.turnRight()
+			if not turtle.detect() then
+				if not selectCobblestone() then
+					light_it = false
+				else
+					turtle.place()
+				end
+			end
+			turtle.turnRight()
+			turtle.turnRight()
+		end
+	end
 
 	if not turtle.up() then
 	 	print( "Aborting Tunnel. Turtle is stuck!" )
@@ -94,6 +184,17 @@ for n=1,length do
 	-- xxx__
 	-- xxx__
 	tryDig()
+	
+	--  xxx
+	-- xxx_T
+	-- xxx_l
+	-- xxx__
+	if lighting then
+		if light_it then
+			if not selectTorch() then return end
+			turtle.placeDown()
+		end
+	end
 	
 	if not saveForward() then return end
 
@@ -135,6 +236,35 @@ for n=1,length do
 	-- xdx__
 	tryDig()
 	tryDigDown()
+	
+	if lighting then
+		if light_it then
+			if not saveForward() then return end
+			
+			-- place cobblestone if we have no "light-post"
+			if not turtle.detect() then
+				if not selectCobblestone() then
+					light_it = false
+				else
+					turtle.place()
+				end
+			end
+			
+			turtle.back()
+		end
+	end
+	
+
+	--  ___
+	-- _____
+	-- lT___
+	-- x_x__
+	if lighting then
+		if light_it then
+			if not selectTorch() then return end
+			turtle.place()
+		end
+	end
 
 	if not turtle.down() then
 	 	print( "Aborting Tunnel. Turtle is stuck!" )
