@@ -1,2 +1,2 @@
-shell.run("flow86/street", 5)
+shell.run("flow86/street", 5, ...)
 

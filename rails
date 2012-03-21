@@ -1,0 +1,66 @@
+shell.run('flow86/tunnel-lib.lua')
+
+local tArgs = { ... }
+tArgs[0] = shell.getRunningProgram()
+
+if #tArgs ~= 1 then
+	print( "Usage: "..tArgs[0].." <length>" )
+	return
+end
+
+-- Mine in a quarry pattern until we hit something we can't dig
+local length = tonumber( tArgs[1] )
+if length < 1 then
+	print( "Tunnel length must be positive" )
+	return
+end
+
+local function selectWoodenPlanks()
+	if advturtle then
+		planks = advturtle.findblock("wooden planks")
+		if not planks then
+			print( "Did not found any(more) planks in the turtle!" )
+			return false
+		end
+		turtle.select(planks)
+		return true
+	end
+	return false
+end
+
+local function selectRails()
+	if advturtle then
+		rails = advturtle.findblock("rail")
+		if not rails then
+			print( "Did not found any(more) rails in the turtle!" )
+			return false
+		end
+		turtle.select(rails)
+		return true
+	end
+	return false
+end
+
+turtle.turnLeft()
+turtle.turnLeft()
+
+for n=1,length do
+	if not selectWoodenPlanks() then return end
+	if not turtle.compareDown() then
+		tryDigDown()
+		turtle.placeDown()
+	end
+	
+	if not turtle.back() then
+		print( "Turtle is stuck!" )
+		return
+	end
+	
+	if not selectRails() then return end
+	if not turtle.compare() then 
+		turtle.place()
+	end
+end
+
+turtle.turnLeft()
+turtle.turnLeft()
