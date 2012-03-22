@@ -9,8 +9,8 @@ end
 
 -- Mine in a quarry pattern until we hit something we can't dig
 local width = tonumber( tArgs[1] )
-if width < 3 then
-	print( "Street width must be at least 3" )
+if width < 1 then
+	print( "Street width must be positive" )
 	return
 end
 
@@ -35,17 +35,20 @@ end
 
 if not select() then return end
 
-turtle.turnRight()
-for n=1,width/2 do
-	if not turtle.forward() then
-		print( "Aborting Street in first row of "..length..". Turtle is stuck!" )
-		break
+if width > 1 then
+	turtle.turnRight()
+	for n=1,width/2 do
+		if not turtle.forward() then
+			print( "Aborting Street in first row of "..length..". Turtle is stuck!" )
+			break
+		end
 	end
+
+	turtle.turnLeft()
 end
 
-turtle.turnLeft()
-
 local function saveForward()
+	tryDig()
 	if not turtle.forward() then
 		print( "Aborting Street. Turtle is stuck!" )
 		return false
@@ -68,42 +71,48 @@ local direction = "left"
 
 for n=1,length do
 
+	if width > 1 then
+		if direction == "left" then
+			turtle.turnLeft()
+		else
+			turtle.turnRight()
+		end
+
+		for i=1,width-1 do
+			if not saveDigDown() then return end
+			if not saveForward() then return end
+		end
+	
+		if not saveDigDown() then return end
+		
+		if direction == "left" then
+			turtle.turnRight()
+			direction = "right"
+		else
+			turtle.turnLeft()
+			direction = "left"
+		end
+	else
+		if not saveDigDown() then return end
+	end
+
+	if not saveForward() then return end
+end
+
+if width > 1 then
 	if direction == "left" then
 		turtle.turnLeft()
 	else
 		turtle.turnRight()
 	end
-
-	for i=1,width-1 do
-		if not saveDigDown() then return end
+	
+	for i=1,width/2 do
 		if not saveForward() then return end
 	end
-
-	if not saveDigDown() then return end
 	
 	if direction == "left" then
 		turtle.turnRight()
-		direction = "right"
 	else
 		turtle.turnLeft()
-		direction = "left"
 	end
-
-	if not saveForward() then return end
-end
-
-if direction == "left" then
-	turtle.turnLeft()
-else
-	turtle.turnRight()
-end
-
-for i=1,width/2 do
-	if not saveForward() then return end
-end
-
-if direction == "left" then
-	turtle.turnRight()
-else
-	turtle.turnLeft()
 end

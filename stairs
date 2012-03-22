@@ -1,0 +1,251 @@
+shell.run("flow86/tunnel-lib.lua")
+
+if not advturtle then
+	print("This program requires advanced turtle API")
+	return
+end
+
+local function selectItem(item)
+	slot = advturtle.findblock(item)
+	if not slot then
+		print("There is no more "..item.." in the turtle!")
+		return false
+	end
+	turtle.select(slot)
+	return true
+end
+
+local pos = { 0, 0, 0, 1 }
+
+local function printPos()
+	print('pos: '..pos[1]..", "..pos[2]..", "..pos[3].." facing: "..pos[4])
+end
+
+local function up()
+	if not turtle.up() then return false end
+	pos[2] = pos[2] + 1
+	
+	--printPos()
+	return true
+end
+
+local function down()
+	if not turtle.down() then return false end
+	pos[2] = pos[2] - 1
+	
+	--printPos()
+	return true
+end
+
+local function forward()
+	if not turtle.forward() then return false end
+	if pos[4] == 1 then
+		pos[1] = pos[1] + 1
+	elseif pos[4] == 3 then
+		pos[1] = pos[1] - 1
+	end
+
+	if pos[4] == 2 then
+		pos[3] = pos[3] + 1
+	elseif pos[4] == 4 then
+		pos[3] = pos[3] - 1
+	end
+
+	--printPos()
+	return true
+end
+
+local function back()
+	if not turtle.back() then return false end
+	if pos[4] == 1 then
+		pos[1] = pos[1] - 1
+	elseif pos[4] == 3 then
+		pos[1] = pos[1] + 1
+	end
+
+	if pos[4] == 2 then
+		pos[3] = pos[3] - 1
+	elseif pos[4] == 4 then
+		pos[3] = pos[3] + 1
+	end
+	
+	--printPos()
+	return true
+end
+
+local function left()
+	turtle.turnLeft()
+	pos[4] = ((pos[4] - 1) % 4)
+	if pos[4] == 0 then pos[4] = 4 end
+	
+	--printPos()
+end
+
+local function right()
+	turtle.turnRight()
+	pos[4] = ((pos[4] + 1) % 4)
+	if pos[4] == 0 then pos[4] = 4 end
+
+	--printPos()
+end
+
+local function turnaround()
+	right()
+	right()
+end
+
+local function toStartX()
+	-- turn to "north"
+	while pos[1] ~= 0 and pos[4] ~= 1 do
+		right()
+	end
+
+	while pos[1] ~= 0 do
+		if pos[1] < 0 then
+			if pos[4] ~= 1 then 
+				turnaround()
+			end
+		else
+			if pos[4] ~= 3 then 
+				turnaround()
+			end
+		end
+		--tryDig()
+		if not forward() then return false end
+	end
+	return true
+end
+
+local function toStartY()
+
+	while pos[2] ~= 0 do
+		if pos[2] < 0 then
+			if not up() then return false end
+		else
+			if not down() then return false end
+		end
+	end
+	return true
+end
+
+local function toStartZ()
+	-- turn to "east"
+	while pos[3] ~= 0 and pos[4] ~= 2 do
+		right()
+	end
+
+	while pos[3] ~= 0 do
+		if pos[3] < 0 then
+			if pos[4] ~= 2 then 
+				turnaround()
+			end
+		else
+			if pos[4] ~= 4 then 
+				turnaround()
+			end
+		end
+		--tryDig()
+		if not forward() then return false end
+	end
+	return true
+end
+
+local function toStart()
+
+	while pos[1] ~= 0 or pos[2] ~= 0 or pos[3] ~= 0 do
+		toStartX()
+		toStartY()
+		toStartZ()
+	end
+	
+	sleep(0.5)
+
+	-- turn back to "north"
+	while pos[4] ~= 1 do
+		right()
+	end
+
+	return false
+end
+
+local function replaceDown()
+	if turtle.compareDown() then return end
+	tryDigDown()
+	turtle.placeDown()
+end
+
+local function stuck()
+	print("Turtle is stuck ... returning ...")
+	return toStart()
+end
+
+local function placeCobble()
+	for x=1,3-1 do
+		if not selectItem("cobblestone") then return toStart() end
+		replaceDown()
+		tryDig()
+		if not forward() then return stuck() end
+	end
+	
+	return true
+end
+
+local function place9x9()
+	right()
+	placeCobble()
+	
+	left()
+	if not selectItem("cobblestone") then return toStart() end
+	replaceDown()
+	tryDig()
+	if not forward() then return stuck() end
+
+	left()
+	placeCobble()
+
+	right()	
+	if not selectItem("cobblestone") then return toStart() end
+	replaceDown()
+	tryDig()
+	if not forward() then return stuck() end
+	
+	right()
+	placeCobble()
+	
+	if not selectItem("cobblestone") then return toStart() end
+	replaceDown()
+
+	for x=1,3-1 do
+		if not back() then return stuck() end
+	end
+	left()
+	tryDig()
+	if not forward() then return stuck() end
+	
+	return true
+end
+
+local function main()
+	-- check requisite
+	print("Checking for stone stairs ...")
+	if not selectItem("stone stairs") then return toStart() end
+	
+	print("Checking for cobblestone ...")
+	if not selectItem("cobblestone") then return toStart() end
+	
+	sleep(0.5)
+	
+	print("Building 9x9 stairway ...")
+	
+	if not place9x9() then return toStart() end
+	
+	print("Finished")
+	
+	up()
+	up()
+	
+	return toStart()
+end
+
+main()
+

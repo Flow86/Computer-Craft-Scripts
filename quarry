@@ -1,30 +1,47 @@
 shell.run("flow86/tunnel-lib.lua")
 
-local tArgs = { ... }
-if #tArgs ~= 1 then
-	print( "Usage: "..tArgs[0].." <depth>" )
-	return
+print( "Quarrying ..." )
+
+depth = advturtle.y()
+
+for n=1,depth-5 do
+	tryDigDown()
+	if not turtle.down() then break end
 end
 
--- Mine in a quarry pattern until we hit something we can't dig
-local length = tonumber( tArgs[1] )
-if length < 1 then
-	print( "Quarry depth must be positive" )
-	return
+while advturtle.y() < depth do
+	tryDigUp()
+	if not turtle.up() then break end
 end
 
-local diameter = 10
-local direction = "left"
-
-for d=1,depth do
-	for n=1,diameter/2 do
-		turtle.digDown()
-	
-		if not turtle.forward() then
-			print( "Aborting Quarry. Turtle is stuck!" )
-			break
-		end
-	end
-	
-	turtle.turnRight()
+cobble = advturtle.findblock("cobblestone")
+if cobble then
+	turtle.select(cobble)
+	turtle.placeDown()
 end
+
+print( "Quarrying complete." )
+print( "Mined "..getCollected().." blocks total." )
+
+turtle.turnLeft()
+turtle.turnLeft()
+
+tryDig()
+if not turtle.forward() then return end
+tryDig()
+if not turtle.forward() then return end
+
+turtle.turnLeft()
+turtle.turnLeft()
+
+tryDigDown()
+
+for n=1,9 do
+	turtle.select(n)
+	turtle.drop()
+end
+
+tryDig()
+if not turtle.forward() then return end
+tryDig()
+if not turtle.forward() then return end

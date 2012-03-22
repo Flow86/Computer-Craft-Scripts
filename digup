@@ -1,0 +1,6 @@
+shell.run("flow86/tunnel-lib.lua")
+
+while advturtle.y() < 66 do
+	tryDigUp()
+	turtle.up()
+end
