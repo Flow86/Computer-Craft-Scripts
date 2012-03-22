@@ -22,7 +22,10 @@ local function printPos()
 end
 
 local function up()
-	if not turtle.up() then return false end
+	--if not turtle.up() then return false end
+	while not turtle.up() do
+		sleep(0.5)
+	end
 	pos[2] = pos[2] + 1
 	
 	--printPos()
@@ -30,7 +33,10 @@ local function up()
 end
 
 local function down()
-	if not turtle.down() then return false end
+	--if not turtle.down() then return false end
+	while not turtle.down() do
+		sleep(0.5)
+	end
 	pos[2] = pos[2] - 1
 	
 	--printPos()
@@ -38,7 +44,10 @@ local function down()
 end
 
 local function forward()
-	if not turtle.forward() then return false end
+	--if not turtle.forward() then return false end
+	while not turtle.forward() do
+		sleep(0.5)
+	end
 	if pos[4] == 1 then
 		pos[1] = pos[1] + 1
 	elseif pos[4] == 3 then
@@ -56,7 +65,10 @@ local function forward()
 end
 
 local function back()
-	if not turtle.back() then return false end
+	--if not turtle.back() then return false end
+	while not turtle.back() do
+		sleep(0.5)
+	end
 	if pos[4] == 1 then
 		pos[1] = pos[1] - 1
 	elseif pos[4] == 3 then
@@ -95,8 +107,12 @@ local function turnaround()
 end
 
 local function toStartX()
+	if pos[1] == 0 then
+		return true
+	end
+
 	-- turn to "north"
-	while pos[1] ~= 0 and pos[4] ~= 1 do
+	while pos[4] ~= 1 do
 		right()
 	end
 
@@ -117,6 +133,9 @@ local function toStartX()
 end
 
 local function toStartY()
+	if pos[2] == 0 then
+		return true
+	end
 
 	while pos[2] ~= 0 do
 		if pos[2] < 0 then
@@ -129,8 +148,12 @@ local function toStartY()
 end
 
 local function toStartZ()
+	if pos[3] == 0 then
+		return true
+	end
+	
 	-- turn to "east"
-	while pos[3] ~= 0 and pos[4] ~= 2 do
+	while pos[4] ~= 2 do
 		right()
 	end
 
@@ -153,9 +176,17 @@ end
 local function toStart()
 
 	while pos[1] ~= 0 or pos[2] ~= 0 or pos[3] ~= 0 do
-		toStartX()
-		toStartY()
-		toStartZ()
+		printPos()
+		x = toStartX()
+		print(x)
+		y = toStartY()
+		print(y)
+		z = toStartZ()
+		print(z)
+		if (pos[1] == 0 and not x) and (pos[2] == 0 or not y) and (pos[3] == 0 or not z) then
+			print("Ooops: I can't find home :/")
+			return false 
+		end
 	end
 	
 	sleep(0.5)
@@ -179,56 +210,192 @@ local function stuck()
 	return toStart()
 end
 
-local function placeCobble()
-	for x=1,3-1 do
-		if not selectItem("cobblestone") then return toStart() end
+local function digForward()
+	tryDig()
+	if not forward() then return false end
+	return true
+end
+
+local function digUp()
+	tryDigUp()
+	if not up() then return false end
+	return true
+end
+
+local function digDown()
+	tryDigDown()
+	if not down() then return false end
+	return true
+end
+
+local function placeRow(item)
+	for x=1,3 do
+		if not selectItem(item) then return toStart() end
 		replaceDown()
-		tryDig()
-		if not forward() then return stuck() end
+		if x ~= 3 and not digForward() then return stuck() end
 	end
 	
 	return true
 end
 
-local function place9x9()
-	right()
-	placeCobble()
+local function digDownRow()
+	for x=1,3 do
+		tryDigDown()
+		if x ~= 3 and not digForward() then return stuck() end
+	end
 	
-	left()
-	if not selectItem("cobblestone") then return toStart() end
-	replaceDown()
-	tryDig()
-	if not forward() then return stuck() end
+	return true
+end
 
-	left()
-	placeCobble()
-
-	right()	
-	if not selectItem("cobblestone") then return toStart() end
-	replaceDown()
-	tryDig()
-	if not forward() then return stuck() end
-	
-	right()
-	placeCobble()
-	
-	if not selectItem("cobblestone") then return toStart() end
-	replaceDown()
-
+local function backRow()
 	for x=1,3-1 do
-		if not back() then return stuck() end
+		if not back() then return false end
+	end
+	return true
+end
+
+local function place9x9(item, item2, item3, goback)
+	-- first row
+	right()
+	if item ~= "" then
+		if not placeRow(item) then return stuck() end
+	else
+		if not digDownRow() then return stuck() end
+	end
+
+	-- second row
+	left()
+	if not digForward() then return stuck() end
+	left()
+	if item2 ~= "" then
+		if not placeRow(item) then return stuck() end
+	else
+		if not digDownRow() then return stuck() end
+	end
+
+	-- third row
+	right()
+	if not digForward() then return stuck() end
+	right()
+	if item3 ~= "" then
+		if not placeRow(item) then return stuck() end
+	else
+		if not digDownRow() then return stuck() end
+	end
+	
+	-- back to left block
+	if goback == true or goback == nil then
+		if not backRow() then return stuck() end
 	end
 	left()
-	tryDig()
-	if not forward() then return stuck() end
+	
+	return true
+end
+
+local function placeXx9(item, item2, item3, rows, goback)
+	if not place9x9(item, item2, item3, false) then return end
+	
+	-- only dig the next X rows
+
+	local stair = "right"
+	
+	if rows > 0 then
+		for row=1,rows do
+			if not digForward() then return stuck() end
+
+			if stair == "right" then
+				left()
+			else
+				right()
+			end
+
+			if not digDownRow() then return stuck() end
+		
+			if stair == "right" then
+				right()
+				stair = "left"
+			else
+				left()
+				stair = "right"
+			end
+		end
+	end
+	
+	-- back to left block if we are on the right side
+	if (goback == true or goback == nil) and stair == "right" then
+		if stair == "left" then
+			left()
+		else
+			right()
+		end
+		if not backRow() then return stuck() end
+		if stair == "left" then
+			right()
+		else
+			left()
+		end
+	end
+	
+	return true
+end
+
+local function buildStairwayPart(largecobble)
+	-- todo lighting
+	-- build stairs and make room for next platform
+	
+	-- first stair
+	if not digForward() then return stuck() end
+	-- stone stairs
+	if not placeXx9("", "", "", 3) then return toStart() end
+
+	-- second stair
+	if not back() then return stuck() end
+	if not back() then return stuck() end
+	if not back() then return stuck() end
+	if not back() then return stuck() end
+	if not digDown() then return stuck() end
+	-- stone stairs
+	if not placeXx9("", "", "", 2) then return toStart() end
+
+	-- third stair
+	if not back() then return stuck() end
+	if not back() then return stuck() end
+	if not back() then return stuck() end
+	if not digDown() then return stuck() end
+	-- stone stairs
+	if not placeXx9("", "", "", 1) then return toStart() end
+
+	-- cobble platform
+	if not digDown() then return stuck() end
+	right()
+
+	if largecobble == true then
+		x = 3
+	end
+	if not placeXx9("cobblestone", "cobblestone", "cobblestone", x) then return toStart() end
+	if largecobble == true then
+		if not back() then return stuck() end
+		if not back() then return stuck() end
+		if not digUp() then return toStart() end
+		if not place9x9("", "", "") then return toStart() end
+		if not back() then return stuck() end
+		if not back() then return stuck() end
+		if not digUp() then return toStart() end
+		if not place9x9("", "", "") then return toStart() end
+		if not down() then return toStart() end
+		if not down() then return toStart() end
+		if not back() then return toStart() end
+		if not back() then return toStart() end
+		if not back() then return toStart() end
+	end
 	
 	return true
 end
 
 local function main()
 	-- check requisite
-	print("Checking for stone stairs ...")
-	if not selectItem("stone stairs") then return toStart() end
+	--print("Checking for stone stairs ...")
+	--if not selectItem("stone stairs") then return toStart() end
 	
 	print("Checking for cobblestone ...")
 	if not selectItem("cobblestone") then return toStart() end
@@ -236,13 +403,15 @@ local function main()
 	sleep(0.5)
 	
 	print("Building 9x9 stairway ...")
-	
-	if not place9x9() then return toStart() end
+
+	-- cobble platform
+	if not place9x9("cobblestone", "cobblestone", "cobblestone") then return toStart() end
+
+	for n=1,40 do
+		if not buildStairwayPart( (n ~= 4) ) then return end
+	end
 	
 	print("Finished")
-	
-	up()
-	up()
 	
 	return toStart()
 end
