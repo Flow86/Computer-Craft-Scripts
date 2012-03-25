@@ -1,0 +1,75 @@
+shell.run('flow86/tunnel-lib.lua')
+shell.run('flow86/move.lua')
+
+if not advturtle then
+	print("This program requires advanced turtle API")
+	return
+end
+
+local tArgs = { ... }
+tArgs[0] = shell.getRunningProgram()
+
+if #tArgs ~= 1 then
+	print( "Usage: "..tArgs[0].." <length>" )
+	return
+end
+
+local length = tonumber( tArgs[1] )
+if length < 1 then
+	print( "Length must be positive" )
+	return
+end
+
+local function selectBlock(block)
+	if not advturtle.selectBlock(block) then
+		print( "Did not found any(more) "..block.." in the turtle!" )
+		return false
+	end
+	return true
+end
+
+local function finish()
+	if not moveToY() then
+		print("Can't come down again :/")
+		return false
+	end
+	return true
+end
+
+print( "Searching for items ..." )
+if not selectBlock("Golden Conductive Pipe") then return finish() end
+if not selectBlock("Stone Transport Pipe") then return finish() end
+print( "Seems ok ..." )
+
+print( "Building Pipeline ..." )
+
+if not up() then return finish() end
+if not up() then return finish() end
+if not up() then return finish() end
+if not forward() then return finish() end
+
+for n=1,length do
+	if not selectBlock("Stone Transport Pipe") then return finish() end
+	if not advturtle.replaceBack() then
+		print("Can't replace block in the back :/")
+		return finish()
+	end
+
+	if not selectBlock("Golden Conductive Pipe") then return finish() end
+	if not advturtle.replaceBackUp() then
+		print("Can't replace block in the back up :/")
+		return finish()
+	end
+	
+	if not forward() then
+		print( "Turtle is stuck!" )
+		return finish()
+	end
+
+	if (n % 5) == 0 then
+		print( "progess: "..n.."/"..length.."." )
+	end
+end
+
+print( "Finished ..." )
+finish()

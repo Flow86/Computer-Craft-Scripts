@@ -35,8 +35,6 @@ local width = 5
 local height = 4
 
 for n=1,length do
-	turtle.placeDown()
-	
 	-- 3rd column xxXxx
 	digColumn(height, true)
 	

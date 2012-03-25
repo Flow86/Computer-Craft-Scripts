@@ -1,0 +1,75 @@
+
+--[[
+for n=1,4 do
+	write(n..": ")
+	sleep(1)
+	print(advturtle.placeFrontRightUp())
+	turtle.turnRight()
+end
+]]--
+
+test = { 
+	"placeFrontLeftDown", "placeFrontDown", "placeFrontRightDown", 
+	"placeFrontLeft", "placeFrontRight", 
+	"placeFrontLeftUp", "placeFrontUp", "placeFrontRightUp",
+	
+	"placeLeftDown", "placeRightDown",
+	"placeLeft", "placeRight",
+	"placeLeftUp", "placeRightUp", 
+	
+	"placeBackLeftDown", "placeBackDown", "placeBackRightDown", 
+	"placeBackLeft", "placeBack", "placeBackRight", 
+	"placeBackLeftUp", "placeBackUp", "placeBackRightUp",
+
+	"compareFrontLeftDown", "compareFrontDown", "compareFrontRightDown", 
+	"compareFrontLeft", "compareFrontRight", 
+	"compareFrontLeftUp", "compareFrontUp", "compareFrontRightUp",
+	
+	"compareLeftDown", "compareRightDown",
+	"compareLeft", "compareRight",
+	"compareLeftUp", "compareRightUp", 
+	
+	"compareBackLeftDown", "compareBackDown", "compareBackRightDown", 
+	"compareBackLeft", "compareBack", "compareBackRight", 
+	"compareBackLeftUp", "compareBackUp", "compareBackRightUp",
+
+	"detectFrontLeftDown", "detectFrontDown", "detectFrontRightDown", 
+	"detectFrontLeft", "detectFrontRight", 
+	"detectFrontLeftUp", "detectFrontUp", "detectFrontRightUp",
+	
+	"detectLeftDown", "detectRightDown",
+	"detectLeft", "detectRight",
+	"detectLeftUp", "detectRightUp", 
+	
+	"detectBackLeftDown", "detectBackDown", "detectBackRightDown", 
+	"detectBackLeft", "detectBack", "detectBackRight", 
+	"detectBackLeftUp", "detectBackUp", "detectBackRightUp",
+
+	"digFrontLeftDown", "digFrontDown", "digFrontRightDown", 
+	"digFrontLeft", "digFrontRight", 
+	"digFrontLeftUp", "digFrontUp", "digFrontRightUp",
+	
+	"digLeftDown", "digRightDown",
+	"digLeft", "digRight",
+	"digLeftUp", "digRightUp", 
+	
+	"digBackLeftDown", "digBackDown", "digBackRightDown", 
+	"digBackLeft", "digBack", "digBackRight", 
+	"digBackLeftUp", "digBackUp", "digBackRightUp",
+}
+
+for k,v in ipairs( test ) do
+	write(k..": "..v..": ")
+	
+	if not advturtle.selectBlock("cobblestone") then
+		print "No Cobblestone!"
+		return
+	end
+	ret = advturtle[v]()
+	if not ret then
+		write("failed ...")
+		read()
+	else
+		print("ok")
+	end
+end
