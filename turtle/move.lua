@@ -9,19 +9,42 @@ end
 local function retry(cmd)
 	local retry = 0;
 	while not cmd() do
-		sleep(1)
+		sleep(0.2)
 		if retry > maxRetries then return false end
 		retry = retry + 1
 	end
 	return true
 end
 
-function getPos()
+function getPosAndFacing()
 	return pos
+end
+
+function getX()
+	return pos[1]
+end
+
+function getY()
+	return pos[2]
+end
+
+function getZ()
+	return pos[3]
+end
+
+function getFacing()
+	return pos[4]
 end
 
 function resetPos()
 	pos = { 0, 0, 0, 1 }
+	--[[if advturtle then
+		-- f  0  1  2  3  4  5
+		-- x             -1  1
+		-- y -1  1            
+		-- z       -1  1      
+		pos[4] = advturtle.facing()-1
+	end]]--
 end
 
 function moveToY()
@@ -111,3 +134,5 @@ function turnaround()
 	right()
 	right()
 end
+
+resetPos()

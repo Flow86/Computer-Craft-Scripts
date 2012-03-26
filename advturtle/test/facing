@@ -1,0 +1,19 @@
+
+for n=1,4 do
+	print("facing: "..advturtle.facing())
+	
+	x = advturtle.x()
+	z = advturtle.z()
+	
+	advturtle.forward()
+	sleep(0.5)
+	if x ~= advturtle.x() then
+		print("new X: "..(advturtle.x()-x))
+	end
+	if z ~= advturtle.z() then
+		print("new Z: "..(advturtle.z()-z))
+	end
+	advturtle.back()
+	
+	advturtle.turnRight()
+end

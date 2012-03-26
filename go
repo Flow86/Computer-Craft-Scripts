@@ -4,33 +4,49 @@ if #tArgs < 1 then
 	return
 end
 
-local function left(nArg)
-	turtle.turnLeft()
-	turtle.forward(nArg)
-	turtle.turnRight()
+local function left()
+	if advturtle then
+		advturtle.left()
+	else
+		turtle.turnLeft()
+		turtle.forward()
+		turtle.turnRight()
+	end
 end
 
-local function right(nArg)
-	turtle.turnRight()
-	turtle.forward()
-	turtle.turnLeft()
+local function right()
+	if advturtle then
+		advturtle.right()
+	else
+		turtle.turnRight()
+		turtle.forward()
+		turtle.turnLeft()
+	end
 end
 
 local tHandlers = {
+	["f"] = turtle.forward,
 	["fd"] = turtle.forward,
 	["forward"] = turtle.forward,
 	["forwards"] = turtle.forward,
+	["b"] = turtle.back,
 	["bk"] = turtle.back,
 	["back"] = turtle.back,
+	["u"] = turtle.up,
 	["up"] = turtle.up,
+	["d"] = turtle.down,
 	["dn"] = turtle.down,
 	["down"] = turtle.down,
+	["l"] = left,
 	["lt"] = left,
 	["left"] = left,
+	["r"] = right,
 	["rt"] = right,
 	["right"] = right,
+	["tl"] = turtle.turnLeft,
 	["tlt"] = turtle.turnLeft,
 	["turnleft"] = turtle.turnLeft,
+	["tr"] = turtle.turnRight,
 	["trt"] = turtle.turnRight,
 	["turnright"] = turtle.turnRight,
 }
@@ -51,11 +67,11 @@ while nArg <= #tArgs do
 	local fnHandler = tHandlers[string.lower(sDirection)]
 	if fnHandler then
 		for n=1,nDistance do
-			fnHandler( nArg )
+			fnHandler()
 		end
 	else
 		print( "No such direction: "..sDirection )
-		print( "Try: forward, back, up, down" )
+		print( "Try: forward, back, up, down, left, right, turnleft, turnright" )
 		return
 	end
 

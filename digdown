@@ -1,6 +1,0 @@
-shell.run("flow86/tunnel-lib.lua")
-
-while advturtle.y() > 30 do
-	tryDigDown()
-	turtle.down()
-end

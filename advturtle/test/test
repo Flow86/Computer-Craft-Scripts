@@ -10,48 +10,48 @@ end
 
 test = { 
 	"placeFrontLeftDown", "placeFrontDown", "placeFrontRightDown", 
-	"placeFrontLeft", "placeFrontRight", 
+	"placeFrontLeft", "placeFront", "placeFrontRight", 
 	"placeFrontLeftUp", "placeFrontUp", "placeFrontRightUp",
 	
-	"placeLeftDown", "placeRightDown",
+	"placeLeftDown", "placeDown", "placeRightDown",
 	"placeLeft", "placeRight",
-	"placeLeftUp", "placeRightUp", 
+	"placeLeftUp", "placeUp", "placeRightUp", 
 	
 	"placeBackLeftDown", "placeBackDown", "placeBackRightDown", 
 	"placeBackLeft", "placeBack", "placeBackRight", 
 	"placeBackLeftUp", "placeBackUp", "placeBackRightUp",
 
 	"compareFrontLeftDown", "compareFrontDown", "compareFrontRightDown", 
-	"compareFrontLeft", "compareFrontRight", 
+	"compareFrontLeft", "compareFront", "compareFrontRight", 
 	"compareFrontLeftUp", "compareFrontUp", "compareFrontRightUp",
 	
-	"compareLeftDown", "compareRightDown",
+	"compareLeftDown", "compareDown", "compareRightDown",
 	"compareLeft", "compareRight",
-	"compareLeftUp", "compareRightUp", 
+	"compareLeftUp", "compareUp", "compareRightUp", 
 	
 	"compareBackLeftDown", "compareBackDown", "compareBackRightDown", 
 	"compareBackLeft", "compareBack", "compareBackRight", 
 	"compareBackLeftUp", "compareBackUp", "compareBackRightUp",
 
 	"detectFrontLeftDown", "detectFrontDown", "detectFrontRightDown", 
-	"detectFrontLeft", "detectFrontRight", 
+	"detectFrontLeft", "detectFront", "detectFrontRight", 
 	"detectFrontLeftUp", "detectFrontUp", "detectFrontRightUp",
 	
-	"detectLeftDown", "detectRightDown",
+	"detectLeftDown", "detectDown", "detectRightDown",
 	"detectLeft", "detectRight",
-	"detectLeftUp", "detectRightUp", 
+	"detectLeftUp", "detectUp", "detectRightUp", 
 	
 	"detectBackLeftDown", "detectBackDown", "detectBackRightDown", 
 	"detectBackLeft", "detectBack", "detectBackRight", 
 	"detectBackLeftUp", "detectBackUp", "detectBackRightUp",
 
 	"digFrontLeftDown", "digFrontDown", "digFrontRightDown", 
-	"digFrontLeft", "digFrontRight", 
+	"digFrontLeft", "digFront", "digFrontRight", 
 	"digFrontLeftUp", "digFrontUp", "digFrontRightUp",
 	
-	"digLeftDown", "digRightDown",
+	"digLeftDown", "digDown", "digRightDown",
 	"digLeft", "digRight",
-	"digLeftUp", "digRightUp", 
+	"digLeftUp", "digUp", "digRightUp", 
 	
 	"digBackLeftDown", "digBackDown", "digBackRightDown", 
 	"digBackLeft", "digBack", "digBackRight", 
@@ -67,9 +67,9 @@ for k,v in ipairs( test ) do
 	end
 	ret = advturtle[v]()
 	if not ret then
-		write("failed ...")
+		write("failed: ", ret)
 		read()
 	else
-		print("ok")
+		print("ok: ", ret)
 	end
 end

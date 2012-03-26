@@ -1,0 +1,115 @@
+if not advturtle or not turtle then
+	error( "Cannot find advanced turtle API on this computer" )
+end
+
+shell.run('flow86/advturtle/prerequisites.lua')
+shell.run('flow86/turtle/move.lua')
+
+local tArgs = { ... }
+tArgs[0] = shell.getRunningProgram()
+
+if #tArgs < 1 then
+	print( "Usage: "..tArgs[0].." <length> <dig>" )
+	return
+end
+
+local length = tonumber( tArgs[1] )
+if length < 1 then
+	print( "Length must be positive" )
+	return
+end
+
+local function toboolean(arg)
+	nr = tonumber( arg )
+	if arg == "y" or arg == "yes" then return true end
+	if arg == "n" or arg == "no" then return false end
+	if nr == 0 then return false end
+	if nr ~= 0 then return true end
+	
+	return false
+end
+
+local dig = false
+if #tArgs == 2 then
+	dig = toboolean( tArgs[2] )
+	if dig then
+		print("WARNING: Activating DIG-mode")
+	end
+end
+
+local function selectBlock(block)
+	if not advturtle.selectBlock(block) then
+		print( "Did not found any(more) "..block.." in the turtle!" )
+		return false
+	end
+	return true
+end
+
+prerequisites = checkPrerequisites("Wooden Planks", "Rail", "Powered Rail", "Detector Rail")
+if not prerequisites["Wooden Planks"] or not prerequisites["Rail"] then return end
+
+local powered = true
+if not prerequisites["Powered Rail"] or not prerequisites["Detector Rail"] then powered = false end
+
+if not powered then
+	print("Disabling powered rails due to lack of powered rails/detector rails!")
+	sleep(2)
+	print("")
+end
+
+print("Starting track laying ...")
+
+while dig and advturtle.detect() do
+	advturtle.dig()
+	sleep(0.8)
+end
+if not forward() then return end
+
+for n=1,length do
+	if not selectBlock("Wooden Planks") then return end
+	if not advturtle.replaceBackDown() then
+	 	print("Can't replace back down block!")
+	 	return
+	end
+
+	if not selectBlock("Rail") then return end
+	if powered then
+		local power_it = false
+		local detect_it = false
+		if advturtle.facing() == 4 or advturtle.facing() == 5 then
+			if (advturtle.x() % 10) == 0 then
+				power_it = true
+			end
+			if (advturtle.x() % 10) == 9 or (advturtle.x() % 10) == 1 then
+				detect_it = true
+			end
+		end
+		if advturtle.facing() == 2 or advturtle.facing() == 3 then
+			if (advturtle.z() % 10) == 0 then
+				power_it = true
+			end
+			if (advturtle.z() % 10) == 9 or (advturtle.z() % 10) == 1 then
+				detect_it = true
+			end
+		end
+		if power_it then
+			if not selectBlock("Powered Rail") then return end
+		end
+		if detect_it then
+			if not selectBlock("Detector Rail") then return end
+		end
+	end
+	
+	if not advturtle.replaceBack() then
+		print("Can't replace back block!")
+	 	return
+	end
+
+	while dig and advturtle.detect() do
+		advturtle.dig()
+		sleep(0.8)
+	end
+	if not forward() then return end
+end
+
+print("Finished")

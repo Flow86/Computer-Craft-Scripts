@@ -1,0 +1,128 @@
+if not advturtle or not turtle then
+	error( "Cannot find advanced turtle API on this computer" )
+end
+
+shell.run('flow86/turtle/move.lua')
+
+local tArgs = { ... }
+tArgs[0] = shell.getRunningProgram()
+
+if #tArgs ~= 2 then
+	print( "Usage: "..tArgs[0].." <width> <length>" )
+	return
+end
+
+local width = tonumber( tArgs[1] )
+if width < 1 then
+	print( "Width must be positive" )
+	return
+end
+
+local length = tonumber( tArgs[2] )
+if length < 1 then
+	print( "Length must be positive" )
+	return
+end
+
+local function selectBlock(block)
+	if not advturtle.selectBlock(block) then
+		print( "Did not found any(more) "..block.." in the turtle!" )
+		return false
+	end
+	return true
+end
+
+print("Checking prerequisites:")
+write("  Cobblestone: ")
+if advturtle.selectBlock("Cobblestone") then
+	print("found")
+else 
+	print("not found")
+	return 
+end
+
+print("")
+print("Starting street building ...")
+
+
+if width > 1 then
+	turtle.turnRight()
+	for n=1,width/2 do
+		if not turtle.forward() then
+			print( "Aborting Street in first row of "..length..". Turtle is stuck!" )
+			break
+		end
+	end
+
+	turtle.turnLeft()
+end
+
+local function saveForward()
+	tryDig()
+	if not turtle.forward() then
+		print( "Aborting Street. Turtle is stuck!" )
+		return false
+	end
+	return true
+end
+
+local function saveDigDown()
+	if not select() then return false end
+	
+	if not turtle.compareDown() then
+		turtle.digDown()
+		turtle.placeDown()
+	end
+	
+	return true
+end
+
+local direction = "left"
+
+for n=1,length do
+
+	if width > 1 then
+		if direction == "left" then
+			turtle.turnLeft()
+		else
+			turtle.turnRight()
+		end
+
+		for i=1,width-1 do
+			if not saveDigDown() then return end
+			if not saveForward() then return end
+		end
+	
+		if not saveDigDown() then return end
+		
+		if direction == "left" then
+			turtle.turnRight()
+			direction = "right"
+		else
+			turtle.turnLeft()
+			direction = "left"
+		end
+	else
+		if not saveDigDown() then return end
+	end
+
+	if not saveForward() then return end
+end
+
+if width > 1 then
+	if direction == "left" then
+		turtle.turnLeft()
+	else
+		turtle.turnRight()
+	end
+	
+	for i=1,width/2 do
+		if not saveForward() then return end
+	end
+	
+	if direction == "left" then
+		turtle.turnRight()
+	else
+		turtle.turnLeft()
+	end
+end
